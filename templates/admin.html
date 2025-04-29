@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Arkaplan ve genel görünüm */
+        body {
+            background: linear-gradient(120deg, #0078D7, #f4f4f9);
+            font-family: 'Poppins', sans-serif; /* Daha modern bir font */
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 1200px;
+            margin: 20px auto;
+            /* FadeIn animasyonuyla açılma */
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .title {
+            color: #0078D7;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        .title:hover {
+            transform: scale(1.05);
+        }
+        .logout-btn {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: scale(1.1);
+        }
+        .btn-primary {
+            background-color: #0078D7;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #005BBB;
+            transform: scale(1.05);
+        }
+        .btn-warning {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .btn-warning:hover {
+            transform: scale(1.05);
+            background-color: #ec971f !important;
+        }
+        .btn-danger {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: scale(1.05);
+            background-color: #d9534f !important;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 10px #0078D7;
+            border-color: #0078D7;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        /* Kilitli alanlar için gri renk */
+        .readonly-input {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+        }
+        /* Tablo hücrelerini orta hizalama */
+        .table th,
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        /* Geri Dön Butonu Stili */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: white;
+            color: #0078D7;
+            border: 2px solid #0078D7;
+            padding: 10px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 1s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-decoration: none;  /* <--- Alt çizgiyi kaldırdık */
+        }
+        .back-button:hover {
+            background-color: #0078D7;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 8px 15px rgba(0, 120, 215, 0.3);
+        }
+
+        /* KARGO EKLENDİ POP-UP (EKLENDİ) */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .popup-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            position: relative;
+            animation: fadeIn 0.5s ease-in-out; /* Açılırken */
+        }
+        .popup-box.fade-out {
+            animation: fadeOut 0.5s ease-in-out forwards; /* Kapanırken */
+        }
+        .popup-icon {
+            display: inline-block;
+            border: 3px solid #28a745;
+            border-radius: 50%;
+            color: #28a745;
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            line-height: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            /* Dönme animasyonu */
+            animation: tickSpin 0.8s ease;
+        }
+        @keyframes tickSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .popup-message {
+            font-size: 1.2rem;
+            color: #333;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* =============== SİLME ONAY POPUP İÇİN YENİ STİLLER =============== */
+        .popup-icon.questionMark {
+            display: inline-block;
+            border: 3px solid #ffc107; /* sarımsı çerçeve */
+            border-radius: 50%;
+            color: #ffc107;
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            line-height: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            animation: questionSpin 0.8s ease; /* ? işaretinin dönmesi */
+        }
+        @keyframes questionSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        /* ================================================================ */
+
+        /* ==================== NEGATİF KARGO AĞIRLIĞI POP-UP (EKLENDİ) ==================== */
+        .popup-icon.errorIcon {
+            display: inline-block;
+            border: 3px solid #dc3545; /* Kırmızı çerçeve */
+            border-radius: 50%;
+            color: #dc3545;
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            line-height: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            animation: spin 1s linear infinite; /* Dönen animasyon */
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        /* =============================================================================== */
+
+        /* Rapor Oluşturma Spinner Animasyonu */
+        .spinnerIcon {
+            display: inline-block;
+            border: 3px solid #0078D7; /* Mavi çerçeve */
+            border-radius: 50%;
+            border-top: 3px solid #fff; /* Üst kısmı beyaz yaparak spinner etkisi yaratır */
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        /* Rapor Oluşturma Başarılı Pop-Up için Animasyon */
+        .popup-icon.tickIcon {
+            display: inline-block;
+            border: 3px solid #28a745; /* Yeşil çerçeve */
+            border-radius: 50%;
+            color: #28a745;
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            line-height: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            animation: tickSpin 0.8s ease;
+        }
+
+        @keyframes tickSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Geri Dön Butonu -->
+    <a href="/logout" class="back-button">&lt;</a>
+
+    <div class="container">
+        <!-- Çıkış Yap Butonu ve Rapor Oluştur Butonu -->
+        <div class="logout-btn">
+            <a href="/logout" class="btn btn-secondary">Çıkış Yap</a>
+            <button id="createReportBtn" class="btn btn-primary ms-2">Rapor Oluştur</button>
+        </div>
+
+        <h1 class="title">Admin Paneli</h1>
+        <hr>
+
+        <!-- Kargo Ekleme Formu -->
+        <form id="addKargoForm" class="mt-4">
+            <h3 class="text-primary">Kargo Ekle</h3>
+
+            <!-- Kargo Türü (Yurt İçi / Yurt Dışı) -->
+            <div class="mb-3">
+                <label for="kargoTuru" class="form-label">Kargo Türü</label>
+                <select id="kargoTuru" class="form-control" required>
+                    <option value="" selected disabled>Seçin</option>
+                    <option value="YI">Yurt İçi Kargo</option>
+                    <option value="YD">Yurt Dışı Kargo</option>
+                </select>
+            </div>
+
+            <!-- Kargo Şirketi -->
+            <div class="mb-3">
+                <label for="kargoSirketi" class="form-label">Kargo Şirketi</label>
+                <select id="kargoSirketi" class="form-control" required>
+                    <option value="" selected disabled>Önce Kargo Türü Seçin</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="kargoTakipNo" class="form-label">Kargo Takip No</label>
+                <input
+                    type="text"
+                    class="form-control readonly-input"
+                    id="kargoTakipNo"
+                    name="kargoTakipNo"
+                    required
+                    readonly
+                >
+            </div>
+
+            <!-- Kargo Çalışanı -->
+            <div class="mb-3">
+                <label for="kargoCalisani" class="form-label">Kargo Çalışanı</label>
+                <input
+                    type="text"
+                    class="form-control readonly-input"
+                    id="kargoCalisani"
+                    readonly
+                >
+                <input type="hidden" id="kargoCalisaniID">
+            </div>
+
+            <!-- Kargo Durumu -->
+            <hr>
+            <div class="mb-3">
+                <label for="addDurumID" class="form-label">Kargo Durumu</label>
+                <select id="addDurumID" class="form-control">
+                    <option value="1">Kargo Hazırlanıyor</option>
+                    <option value="2">Kargo Yolda</option>
+                    <option value="3">Kargo Teslim Edildi</option>
+                </select>
+            </div>
+
+            <!-- Gönderici Bilgileri -->
+            <hr>
+            <h5 class="text-secondary">Gönderici Bilgileri</h5>
+            <div class="mb-3">
+                <label for="gondericiAd" class="form-label">Gönderici Adı</label>
+                <input type="text" class="form-control" id="gondericiAd" required>
+            </div>
+            <div class="mb-3">
+                <label for="gondericiSoyad" class="form-label">Gönderici Soyadı</label>
+                <input type="text" class="form-control" id="gondericiSoyad" required>
+            </div>
+            <div class="mb-3">
+                <label for="gondericiAdres" class="form-label">Gönderici Adresi</label>
+                <textarea class="form-control" id="gondericiAdres" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="postaKodu" class="form-label">Posta Kodu</label>
+                <input type="text" class="form-control" id="postaKodu" required>
+            </div>
+            <div class="mb-3">
+                <label for="gondericiTel" class="form-label">Gönderici Telefon</label>
+                <input type="text" class="form-control" id="gondericiTel" required>
+            </div>
+
+            <!-- Alıcı Bilgileri -->
+            <hr>
+            <h5 class="text-secondary">Alıcı Bilgileri</h5>
+            <div class="mb-3">
+                <label for="aliciAd" class="form-label">Alıcı Adı</label>
+                <input type="text" class="form-control" id="aliciAd" required>
+            </div>
+            <div class="mb-3">
+                <label for="aliciSoyad" class="form-label">Alıcı Soyadı</label>
+                <input type="text" class="form-control" id="aliciSoyad" required>
+            </div>
+            <div class="mb-3">
+                <label for="aliciAdres" class="form-label">Alıcı Adresi</label>
+                <textarea class="form-control" id="aliciAdres" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="aliciTel" class="form-label">Alıcı Telefon</label>
+                <input type="text" class="form-control" id="aliciTel" required>
+            </div>
+
+            <!-- Kargo Temel Bilgileri -->
+            <hr>
+            <div class="mb-3">
+                <label for="kargoAgirligi" class="form-label">Kargo Ağırlığı (kg)</label>
+                <input type="number" class="form-control" id="kargoAgirligi" step="0.01" required>
+            </div>
+
+            <!-- Fiyatlandırma -->
+            <div class="mb-3">
+                <label for="odemeTutari" class="form-label">Kargo Ücreti (TL)</label>
+                <input
+                    type="text"
+                    class="form-control readonly-input"
+                    id="odemeTutari"
+                    readonly
+                >
+            </div>
+
+            <div class="mb-3">
+                <label for="gonderimTarihi" class="form-label">Gönderim Tarihi</label>
+                <input type="date" class="form-control" id="gonderimTarihi" required>
+            </div>
+            <div class="mb-3">
+                <label for="teslimTarihi" class="form-label">Teslim Tarihi</label>
+                <input type="date" class="form-control" id="teslimTarihi">
+            </div>
+
+            <!-- Dinamik ALAN: İl / Ülke ve İlçe / Şehir -->
+            <hr>
+            <div class="mb-3">
+                <label for="kargoIl" class="form-label">İl / Ülke</label>
+                <select id="kargoIl" class="form-control" required>
+                    <option value="" selected disabled>Önce Tür Seçin</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="kargoIlce" class="form-label">İlçe / Şehir</label>
+                <select id="kargoIlce" class="form-control" required>
+                    <option value="" selected disabled>Önce Yukarıyı Seçin</option>
+                </select>
+            </div>
+            <!-- Dinamik ALAN Bitti -->
+
+            <button type="submit" class="btn btn-primary">Kargo Ekle</button>
+        </form>
+
+        <hr>
+
+        <!-- Kargolar (tablo) -->
+        <h3 class="text-danger mt-5">Kargolar</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Kargo Takip No</th>
+                    <th>Kargo Ağırlığı (kg)</th>
+                    <th>Gönderim Tarihi</th>
+                    <th>Teslim Tarihi</th>
+                    <th>İl / Ülke</th>
+                    <th>İlçe / Şehir</th>
+                    <th>Posta Kodu</th>
+                    <th>Alıcı Adresi</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="kargoList">
+                {% for kargo in kargolar %}
+                <tr>
+                    <td>{{ kargo.KargoTakipNo }}</td>
+                    <td>{{ kargo.KargoAgirligi }}</td>
+                    <td>{{ kargo.GonderimTarihi }}</td>
+                    <td>{{ kargo.TeslimTarihi }}</td>
+                    <td>{{ kargo.Il }}</td>
+                    <td>{{ kargo.Ilce }}</td>
+                    <td>{{ kargo.PostaKodu }}</td>
+                    <td>{{ kargo.AliciAdres }}</td>
+                    <td>
+                        <!-- Sil Butonu -->
+                        <button class="btn btn-danger delete-btn" data-id="{{ kargo.KargoTakipNo }}">Sil</button>
+                        <!-- Güncelle Butonu -->
+                        <button class="btn btn-warning update-btn" data-id="{{ kargo.KargoTakipNo }}" style="margin-left: 5px;">Güncelle</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Güncelleme Modali -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Kargo Güncelle</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+          <div class="modal-body">
+            <form id="updateKargoForm">
+                <input type="hidden" id="updateKargoTakipNo">
+                <input type="hidden" id="updateKargoTuru">
+
+                <div class="mb-3">
+                    <label for="updateKargoCalisani" class="form-label">Kargo Çalışanı</label>
+                    <input type="text" class="form-control readonly-input" id="updateKargoCalisani" readonly>
+                    <input type="hidden" id="updateKargoCalisaniID">
+                </div>
+
+                <!-- Gönderici Bilgileri -->
+                <div class="row">
+                  <div class="col-6 mb-3">
+                    <label for="updateGondericiAd" class="form-label">Gönderici Adı</label>
+                    <input type="text" class="form-control" id="updateGondericiAd" required>
+                  </div>
+                  <div class="col-6 mb-3">
+                    <label for="updateGondericiSoyad" class="form-label">Gönderici Soyadı</label>
+                    <input type="text" class="form-control" id="updateGondericiSoyad" required>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="updatePostaKodu" class="form-label">Posta Kodu</label>
+                  <input type="text" class="form-control" id="updatePostaKodu" required>
+                </div>
+                <div class="mb-3">
+                  <label for="updateGondericiAdres" class="form-label">Gönderici Adresi</label>
+                  <textarea class="form-control" id="updateGondericiAdres" required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="updateGondericiTel" class="form-label">Gönderici Telefon</label>
+                  <input type="text" class="form-control" id="updateGondericiTel" required>
+                </div>
+
+                <!-- Alıcı Bilgileri -->
+                <hr>
+                <div class="row">
+                  <div class="col-6 mb-3">
+                    <label for="updateAliciAd" class="form-label">Alıcı Adı</label>
+                    <input type="text" class="form-control" id="updateAliciAd" required>
+                  </div>
+                  <div class="col-6 mb-3">
+                    <label for="updateAliciSoyad" class="form-label">Alıcı Soyadı</label>
+                    <input type="text" class="form-control" id="updateAliciSoyad" required>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="updateAliciAdres" class="form-label">Alıcı Adresi</label>
+                  <textarea class="form-control" id="updateAliciAdres" required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="updateAliciTel" class="form-label">Alıcı Telefon</label>
+                  <input type="text" class="form-control" id="updateAliciTel" required>
+                </div>
+
+                <!-- Kargo Bilgileri -->
+                <hr>
+                <div class="mb-3">
+                  <label for="updateKargoAgirligi" class="form-label">Kargo Ağırlığı (kg)</label>
+                  <input type="number" class="form-control" id="updateKargoAgirligi" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                  <label for="updateOdemeTutari" class="form-label">Kargo Ücreti (TL)</label>
+                  <input type="text" class="form-control readonly-input" id="updateOdemeTutari" readonly>
+                </div>
+                <div class="mb-3">
+                  <label for="updateGonderimTarihi" class="form-label">Gönderim Tarihi</label>
+                  <input type="date" class="form-control" id="updateGonderimTarihi" required>
+                </div>
+                <div class="mb-3">
+                  <label for="updateTeslimTarihi" class="form-label">Teslim Tarihi</label>
+                  <input type="date" class="form-control" id="updateTeslimTarihi">
+                </div>
+
+                <!-- Kargo Durumu Seçimi -->
+                <hr>
+                <div class="mb-3">
+                  <label for="updateDurumID" class="form-label">Kargo Durumu</label>
+                  <select id="updateDurumID" class="form-control">
+                    <option value="1">Kargo Hazırlanıyor</option>
+                    <option value="2">Kargo Yolda</option>
+                    <option value="3">Kargo Teslim Edildi</option>
+                  </select>
+                </div>
+
+                <!-- İl/Ülke ve İlçe/Şehir -->
+                <div class="row">
+                  <div class="col-6 mb-3">
+                    <label for="updateKargoIl" class="form-label">İl / Ülke</label>
+                    <select id="updateKargoIl" class="form-control" required>
+                        <option value="" selected disabled>Önce Tür Seçin</option>
+                    </select>
+                  </div>
+                  <div class="col-6 mb-3">
+                    <label for="updateKargoIlce" class="form-label">İlçe / Şehir</label>
+                    <select id="updateKargoIlce" class="form-control" required>
+                        <option value="" selected disabled>Önce Yukarıyı Seçin</option>
+                    </select>
+                  </div>
+                </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="saveUpdateBtn">Kaydet</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- MODAL BİTTİ -->
+
+    <!-- Kargo Eklendi POP-UP (EKLENDİ) -->
+    <div class="popup-overlay" id="kargoAddedPopup">
+      <div class="popup-box" id="kargoAddedBox">
+        <div class="popup-icon">✓</div>
+        <div class="popup-message" id="kargoAddedMessage">Kargo Eklendi</div>
+      </div>
+    </div>
+
+    <!-- ==================== SİLME ONAY POP-UP ==================== -->
+    <div class="popup-overlay" id="confirmDeletePopup">
+      <div class="popup-box" id="confirmDeleteBox">
+        <div class="popup-icon questionMark">?</div>
+        <div class="popup-message" id="confirmDeleteMessage">Silmek istediğinize emin misiniz?</div>
+        <div style="margin-top: 20px;">
+          <button id="deleteYesBtn" class="btn btn-danger">Evet</button>
+          <button id="deleteNoBtn" class="btn btn-secondary" style="margin-left: 10px;">Hayır</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SİLME BAŞARILI POP-UP ==================== -->
+    <div class="popup-overlay" id="deleteSuccessPopup">
+      <div class="popup-box" id="deleteSuccessBox">
+        <div class="popup-icon">✓</div>
+        <div class="popup-message" id="deleteSuccessMessage">Kargo Başarıyla Silindi</div>
+      </div>
+    </div>
+    <!-- =========================================================== -->
+
+    <!-- ==================== NEGATİF KARGO AĞIRLIĞI (ERROR) POP-UP (EKLENDİ) ==================== -->
+    <div class="popup-overlay" id="errorPopup">
+      <div class="popup-box" id="errorBox">
+        <div class="popup-icon errorIcon">X</div>
+        <div class="popup-message" id="errorMessage">Bir hata oluştu!</div>
+      </div>
+    </div>
+    <!-- ======================================================================= -->
+
+    <!-- ==================== Rapor Oluşturma Pop-Up ==================== -->
+    <!-- Rapor Oluşturma Sırasında Gösterilecek Pop-Up (Spinner) -->
+    <div class="popup-overlay" id="reportCreatingPopup">
+      <div class="popup-box" id="reportCreatingBox">
+        <div class="popup-icon spinnerIcon">🔄</div>
+        <div class="popup-message" id="reportCreatingMessage">Rapor Oluşturuluyor...</div>
+      </div>
+    </div>
+
+    <!-- Rapor Oluşturma Başarılı Pop-Up'ı -->
+    <div class="popup-overlay" id="reportCreatedPopup">
+      <div class="popup-box" id="reportCreatedBox">
+        <div class="popup-icon">✓</div>
+        <div class="popup-message" id="reportCreatedMessage">Rapor başarıyla oluşturuldu!</div>
+      </div>
+    </div>
+    <!-- ==================== Rapor Oluşturma Pop-Up Bitti ==================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        /////////////////////////////////////////////////////////////////
+        // Kargo Eklendi Pop-up Gösterme (EKLENDİ)
+        /////////////////////////////////////////////////////////////////
+        function showKargoEklendiPopup(message) {
+            const overlay = document.getElementById("kargoAddedPopup");
+            const box = document.getElementById("kargoAddedBox");
+            const msg = document.getElementById("kargoAddedMessage");
+            msg.textContent = message || "Kargo Eklendi"; // Varsayılan metin
+            overlay.style.display = "flex";
+
+            // 5 sn sonra kapanış animasyonu
+            setTimeout(() => {
+                box.classList.add("fade-out");
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    box.classList.remove("fade-out");
+                    // Sayfayı yenileyelim (isteğe bağlı)
+                    window.location.reload();
+                }, 500);
+            }, 5000);
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // HATA POP-UP (Negatif Ağırlık vb.)
+        /////////////////////////////////////////////////////////////////
+        function showErrorPopup(message) {
+            const overlay = document.getElementById("errorPopup");
+            const box = document.getElementById("errorBox");
+            const msg = document.getElementById("errorMessage");
+            msg.textContent = message || "Bir hata oluştu!";
+            overlay.style.display = "flex";
+
+            // 5 sn sonra kapanış animasyonu
+            setTimeout(() => {
+                box.classList.add("fade-out");
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    box.classList.remove("fade-out");
+                }, 500);
+            }, 5000);
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // SİLME ONAY POP-UP VE SİLME BAŞARILI POP-UP FONKSİYONLARI
+        /////////////////////////////////////////////////////////////////
+        function showConfirmDeletePopup(kargoTakipNo, kargoRowIndex) {
+            const overlay = document.getElementById("confirmDeletePopup");
+            const box = document.getElementById("confirmDeleteBox");
+
+            // Kaldırılacak kargonun takipNo ve tablo satır indeksini box'ın dataset'ine atıyoruz
+            box.dataset.kargoTakipNo = kargoTakipNo;
+            box.dataset.rowIndex = kargoRowIndex;
+
+            overlay.style.display = "flex";
+        }
+
+        function hideConfirmDeletePopup() {
+            const overlay = document.getElementById("confirmDeletePopup");
+            const box = document.getElementById("confirmDeleteBox");
+            box.classList.add("fade-out");
+
+            setTimeout(() => {
+                overlay.style.display = "none";
+                box.classList.remove("fade-out");
+            }, 500);
+        }
+
+        function showDeleteSuccessPopup(message) {
+            const overlay = document.getElementById("deleteSuccessPopup");
+            const box = document.getElementById("deleteSuccessBox");
+            const msg = document.getElementById("deleteSuccessMessage");
+            msg.textContent = message || "Kargo Başarıyla Silindi";
+            overlay.style.display = "flex";
+
+            setTimeout(() => {
+                box.classList.add("fade-out");
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    box.classList.remove("fade-out");
+                    window.location.reload(); // 5sn sonra sayfayı yenileyebilirsiniz
+                }, 500);
+            }, 5000);
+        }
+
+        // Popup içindeki Evet / Hayır butonları
+        document.getElementById("deleteYesBtn").addEventListener("click", function() {
+            const box = document.getElementById("confirmDeleteBox");
+            const kargoTakipNo = box.dataset.kargoTakipNo;
+            const rowIndex = box.dataset.rowIndex;
+
+            // AJAX (fetch) ile silme isteğini at
+            fetch("/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "delete",
+                    kargoTakipNo
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Tablo satırını kaldıralım
+                    const tableBody = document.getElementById("kargoList");
+                    // rowIndex, for döngüsü ile render edilen tr indexine denk geliyor
+                    const row = tableBody.getElementsByTagName("tr")[rowIndex];
+                    if(row) row.remove();
+
+                    // Popup’ı kapat ve başarı mesajını göster
+                    hideConfirmDeletePopup();
+                    showDeleteSuccessPopup(data.message || "Kargo Başarıyla Silindi");
+                } else {
+                    hideConfirmDeletePopup();
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error("Hata:", error));
+        });
+
+        document.getElementById("deleteNoBtn").addEventListener("click", function() {
+            // Hayır denirse popup animasyonla kapansın
+            hideConfirmDeletePopup();
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // Kargo Şirketleri (değişmeden bırakılıyor)
+        /////////////////////////////////////////////////////////////////
+        const KargoSirketleri = {
+            "YI": [
+                { id: 1, sirketAdi: "MNG Kargo", sirketKodu: "MNG" },
+                { id: 2, sirketAdi: "Aras Kargo", sirketKodu: "ARAS" }
+            ],
+            "YD": [
+                { id: 3, sirketAdi: "UPS",  sirketKodu: "UPS" },
+                { id: 4, sirketAdi: "FedEx", sirketKodu: "FDX" }
+            ]
+        };
+
+        /////////////////////////////////////////////////////////////////
+        // DOM Elemanları
+        /////////////////////////////////////////////////////////////////
+        const kargoTuruSelect       = document.getElementById("kargoTuru");
+        const kargoSirketiSelect    = document.getElementById("kargoSirketi");
+        const kargoInput            = document.getElementById("kargoTakipNo");
+        const kargoIlSelect         = document.getElementById("kargoIl");
+        const kargoIlceSelect       = document.getElementById("kargoIlce");
+        const kargoAgirligiInput    = document.getElementById("kargoAgirligi");
+        const odemeTutariInput      = document.getElementById("odemeTutari");
+        const kargoCalisaniInput    = document.getElementById("kargoCalisani");
+        const kargoCalisaniIDInput  = document.getElementById("kargoCalisaniID");
+        const addDurumIDSelect      = document.getElementById("addDurumID");
+
+        // Güncelleme
+        const updateKargoTuruInput     = document.getElementById("updateKargoTuru");
+        const updateKargoIlSelect      = document.getElementById("updateKargoIl");
+        const updateKargoIlceSelect    = document.getElementById("updateKargoIlce");
+        const updateKargoAgirligiInput = document.getElementById("updateKargoAgirligi");
+        const updateOdemeTutariInput   = document.getElementById("updateOdemeTutari");
+        const updateDurumIDSelect      = document.getElementById("updateDurumID");
+
+        /////////////////////////////////////////////////////////////////
+        // Kargo Türü Seçimi
+        /////////////////////////////////////////////////////////////////
+        kargoTuruSelect.addEventListener("change", function() {
+            const turValue = this.value;
+            // Kargo Şirketi Seçim Kutusu
+            kargoSirketiSelect.innerHTML = '<option value="" selected disabled>Şirket Seçin</option>';
+
+            if (KargoSirketleri[turValue]) {
+                KargoSirketleri[turValue].forEach(sirket => {
+                    const opt = document.createElement("option");
+                    opt.value = sirket.id;
+                    opt.dataset.sirketKodu = sirket.sirketKodu;
+                    opt.textContent = sirket.sirketAdi;
+                    kargoSirketiSelect.appendChild(opt);
+                });
+            }
+
+            // IL / Ülke dropdown'ı güncelle
+            kargoIlSelect.innerHTML = '<option value="" selected disabled>Seçin</option>';
+            kargoIlceSelect.innerHTML = '<option value="" selected disabled>Seçin</option>';
+
+            if (turValue === "YI") {
+                // Mevcut "iller" backend'den (jinja) geldi, doğrudan dolduralım
+                {% for row in iller %}
+                  const optIl_{{row.IlID}} = document.createElement("option");
+                  optIl_{{row.IlID}}.value = "{{row.IlID}}";
+                  optIl_{{row.IlID}}.textContent = "{{row.IlAdi}}";
+                  kargoIlSelect.appendChild(optIl_{{row.IlID}});
+                {% endfor %}
+            } else if (turValue === "YD") {
+                // getCountries ile yurtdisiUlkeler'i çekelim
+                fetch("/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "getCountries"
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        data.countries.forEach(country => {
+                            const opt = document.createElement("option");
+                            opt.value = country.yurtdisiUlkeID;
+                            opt.textContent = country.yurtdisiUlkeAdi;
+                            kargoIlSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+
+            // Temizle / sıfırla
+            odemeTutariInput.value = "";
+            kargoInput.value = "";
+            kargoCalisaniInput.value = "";
+            kargoCalisaniIDInput.value = "";
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // Kargo Şirketi seçilince -> KargoTakipNo oluştur + Rastgele çalışan
+        /////////////////////////////////////////////////////////////////
+        kargoSirketiSelect.addEventListener("change", function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const sirketKodu = selectedOption.dataset.sirketKodu;
+            const turValue = kargoTuruSelect.value;
+            const random4 = Math.floor(1000 + Math.random() * 9000);
+            kargoInput.value = turValue + sirketKodu + random4;
+
+            // Rastgele Kargo Çalışanı
+            fetch("/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "fetchRandomCalisan" })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.KargoCalisaniID && data.TamAd) {
+                    kargoCalisaniInput.value   = data.TamAd;
+                    kargoCalisaniIDInput.value = data.KargoCalisaniID;
+                }
+            })
+            .catch(err => console.error("Kargo çalışanı çekme hatası:", err));
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // IL/Ülke seçilince -> ILCE/Şehir doldur
+        /////////////////////////////////////////////////////////////////
+        kargoIlSelect.addEventListener("change", function() {
+            const turValue = kargoTuruSelect.value;
+            kargoIlceSelect.innerHTML = '<option value="" selected disabled>Seçin</option>';
+
+            if (turValue === "YI") {
+                // getIlce
+                const secilenIlID = this.value;
+                fetch("/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "getIlce",
+                        ilID: secilenIlID
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        data.ilceler.forEach(item => {
+                            const opt = document.createElement("option");
+                            opt.value = item.IlceID;
+                            opt.textContent = item.IlceAdi;
+                            kargoIlceSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+            } else {
+                // Yurt dışı -> getForeignCities
+                const secilenUlkeID = this.value;
+                fetch("/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "getForeignCities",
+                        ulkeID: secilenUlkeID
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        data.cities.forEach(city => {
+                            const opt = document.createElement("option");
+                            opt.value = city.yurtdisiSehirID;
+                            opt.textContent = city.yurtdisiSehirAdi;
+                            kargoIlceSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // Kargo Ağırlığı / Tür => Ücret Hesabı
+        /////////////////////////////////////////////////////////////////
+        function hesaplaOdemeTutari(turValue, agirlik) {
+            let tutar = 0;
+            if (turValue === "YI") tutar = agirlik * 100;
+            else if (turValue === "YD") tutar = agirlik * 200;
+            return tutar.toFixed(2);
+        }
+
+        kargoAgirligiInput.addEventListener("input", function () {
+            const agirlik = parseFloat(kargoAgirligiInput.value || 0);
+            const turValue = kargoTuruSelect.value;
+
+            // Fiyatı hesapla
+            let tutar = hesaplaOdemeTutari(turValue, agirlik);
+
+            // Eğer ağırlık veya tutar negatifse uyarı mesajı göster
+            if (agirlik < 0 || tutar < 0) {
+                odemeTutariInput.value = "Lütfen geçerli bir değer giriniz!";
+                kargoAgirligiInput.setCustomValidity("Lütfen geçerli bir değer giriniz!");
+                kargoAgirligiInput.reportValidity(); // Kullanıcıya hata mesajını göster
+            } else {
+                odemeTutariInput.value = tutar;
+                kargoAgirligiInput.setCustomValidity(""); // Hata mesajını temizle
+            }
+        });
+
+        kargoTuruSelect.addEventListener("change", function () {
+            const agirlik = parseFloat(kargoAgirligiInput.value || 0);
+            const turValue = kargoTuruSelect.value;
+
+            // Fiyatı hesapla ve negatif olup olmadığını kontrol et
+            let tutar = hesaplaOdemeTutari(turValue, agirlik);
+            if (agirlik < 0 || tutar < 0) {
+                odemeTutariInput.value = "Lütfen geçerli bir değer giriniz!";
+            } else {
+                odemeTutariInput.value = tutar;
+            }
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // Kargo Ekle
+        /////////////////////////////////////////////////////////////////
+        document.getElementById("addKargoForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const kargoTuru      = document.getElementById("kargoTuru").value;
+            const kargoSirketiID = document.getElementById("kargoSirketi").value;
+            const kargoTakipNo   = document.getElementById("kargoTakipNo").value;
+
+            const postaKodu      = document.getElementById("postaKodu").value;
+            const gondericiAd    = document.getElementById("gondericiAd").value;
+            const gondericiSoyad = document.getElementById("gondericiSoyad").value;
+            const gondericiAdres = document.getElementById("gondericiAdres").value;
+            const gondericiTel   = document.getElementById("gondericiTel").value;
+
+            const aliciAd    = document.getElementById("aliciAd").value;
+            const aliciSoyad = document.getElementById("aliciSoyad").value;
+            const aliciAdres = document.getElementById("aliciAdres").value;
+            const aliciTel   = document.getElementById("aliciTel").value;
+
+            const kargoAgirligi  = document.getElementById("kargoAgirligi").value;
+            const gonderimTarihi = document.getElementById("gonderimTarihi").value;
+            const teslimTarihi   = document.getElementById("teslimTarihi").value;
+
+            const ilID           = kargoIlSelect.value;
+            const ilceID         = kargoIlceSelect.value;
+            const odemeTutari    = document.getElementById("odemeTutari").value;
+            const calisanId      = document.getElementById("kargoCalisaniID").value;
+
+            // Seçilen kargo durumu
+            const durumId        = addDurumIDSelect.value;
+
+            fetch("/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "add",
+                    kargoTuru,
+                    kargoSirketiID,
+                    kargoTakipNo,
+                    postaKodu,
+                    gondericiAd,
+                    gondericiSoyad,
+                    gondericiAdres,
+                    gondericiTel,
+                    aliciAd,
+                    aliciSoyad,
+                    aliciAdres,
+                    aliciTel,
+                    kargoAgirligi,
+                    gonderimTarihi,
+                    teslimTarihi,
+                    odemeTutari,
+                    calisanId,
+                    ilID,
+                    ilceID,
+                    durumId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Kargo Eklendi Pop-up
+                    showKargoEklendiPopup(data.message || "Kargo Eklendi!");
+                } else {
+                    // ================== YENİ EKLENTİ (NEGATİF AĞIRLIK) ==================
+                    if (data.message && data.message.includes("Ctr_KargoAgirligi")) {
+                        // Eğer veritabanı 'Check constraint' hatası dönerse
+                        showErrorPopup("Kargo Ağırlığı negatif olamaz!");
+                    } else {
+                        // Diğer hatalar
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(error => console.error("Hata:", error));
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // Silme (Artık confirm yerine özel popup)
+        /////////////////////////////////////////////////////////////////
+        document.querySelectorAll(".delete-btn").forEach((button, idx) => {
+            button.addEventListener("click", function() {
+                const kargoRow = this.closest("tr");
+                const kargoTakipNo = this.dataset.id;
+
+                // Silme popup'ı açalım
+                showConfirmDeletePopup(kargoTakipNo, idx);
+            });
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // GÜNCELLEME
+        /////////////////////////////////////////////////////////////////
+        let currentModal = new bootstrap.Modal(document.getElementById("updateModal"));
+
+        document.querySelectorAll(".update-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                const kargoTakipNo = this.dataset.id;
+                fetch("/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "getKargo",
+                        kargoTakipNo
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        document.getElementById("updateKargoTakipNo").value = data.kargo.KargoTakipNo;
+                        document.getElementById("updateKargoTuru").value    = data.kargo.KargoTuru || "";
+                        document.getElementById("updateOdemeTutari").value  = data.kargo.ödemeTutarı || "";
+
+                        document.getElementById("updatePostaKodu").value    = data.kargo.PostaKodu || "";
+                        document.getElementById("updateGondericiAd").value  = data.kargo.GondericiAd || "";
+                        document.getElementById("updateGondericiSoyad").value = data.kargo.GondericiSoyad || "";
+                        document.getElementById("updateGondericiAdres").value = data.kargo.GondericiAdres || "";
+                        document.getElementById("updateGondericiTel").value   = data.kargo.GondericiTel || "";
+
+                        document.getElementById("updateAliciAd").value    = data.kargo.AliciAd || "";
+                        document.getElementById("updateAliciSoyad").value = data.kargo.AliciSoyad || "";
+                        document.getElementById("updateAliciAdres").value = data.kargo.AliciAdres || "";
+                        document.getElementById("updateAliciTel").value   = data.kargo.AliciTel || "";
+
+                        document.getElementById("updateKargoAgirligi").value  = data.kargo.KargoAgirligi || "";
+                        document.getElementById("updateGonderimTarihi").value = data.kargo.GonderimTarihi || "";
+                        document.getElementById("updateTeslimTarihi").value   = data.kargo.TeslimTarihi || "";
+
+                        // Kargo Durumu
+                        updateDurumIDSelect.value = data.kargo.DurumID || "1";
+
+                        // Yurt içi mi, yurt dışı mı?
+                        const turValue = data.kargo.KargoTuru;
+                        updateKargoTuruInput.value = turValue;
+
+                        updateKargoIlSelect.innerHTML = '<option value="" selected disabled>Seçin</option>';
+                        updateKargoIlceSelect.innerHTML = '<option value="" selected disabled>Seçin</option>';
+
+                        if (turValue === "YI") {
+                            {% for row in iller %}
+                              const optIl_{{row.IlID}} = document.createElement("option");
+                              optIl_{{row.IlID}}.value = "{{row.IlID}}";
+                              optIl_{{row.IlID}}.textContent = "{{row.IlAdi}}";
+                              updateKargoIlSelect.appendChild(optIl_{{row.IlID}});
+                            {% endfor %}
+                            updateKargoIlSelect.value = data.kargo.KargoIlID || "";
+
+                            // İlçeleri çek
+                            fetch("/admin", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    action: "getIlce",
+                                    ilID: data.kargo.KargoIlID
+                                })
+                            })
+                            .then(r => r.json())
+                            .then(ilceData => {
+                                if(ilceData.success) {
+                                    ilceData.ilceler.forEach(item => {
+                                        const opt = document.createElement("option");
+                                        opt.value = item.IlceID;
+                                        opt.textContent = item.IlceAdi;
+                                        updateKargoIlceSelect.appendChild(opt);
+                                    });
+                                    updateKargoIlceSelect.value = data.kargo.KargoIlceID || "";
+                                }
+                            })
+                            .catch(err => console.error(err));
+                        } else {
+                            // Yurt dışı
+                            fetch("/admin", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    action: "getCountries"
+                                })
+                            })
+                            .then(r => r.json())
+                            .then(countryData => {
+                                if(countryData.success) {
+                                    countryData.countries.forEach(ct => {
+                                        const opt = document.createElement("option");
+                                        opt.value = ct.yurtdisiUlkeID;
+                                        opt.textContent = ct.yurtdisiUlkeAdi;
+                                        updateKargoIlSelect.appendChild(opt);
+                                    });
+                                    updateKargoIlSelect.value = data.kargo.KargoIlID || "";
+
+                                    // Ardından şehirler
+                                    fetch("/admin", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                            action: "getForeignCities",
+                                            ulkeID: data.kargo.KargoIlID
+                                        })
+                                    })
+                                    .then(rr => rr.json())
+                                    .then(cityData => {
+                                        if(cityData.success) {
+                                            cityData.cities.forEach(city => {
+                                                const opt2 = document.createElement("option");
+                                                opt2.value = city.yurtdisiSehirID;
+                                                opt2.textContent = city.yurtdisiSehirAdi;
+                                                updateKargoIlceSelect.appendChild(opt2);
+                                            });
+                                            updateKargoIlceSelect.value = data.kargo.KargoIlceID || "";
+                                        }
+                                    })
+                                    .catch(err2 => console.error(err2));
+                                }
+                            })
+                            .catch(err => console.error(err));
+                        }
+
+                        // Rastgele çalışan (güncellemede de)
+                        fetch("/admin", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                action: "fetchRandomCalisan"
+                            })
+                        })
+                        .then(r => r.json())
+                        .then(randomCalisan => {
+                            if (randomCalisan && randomCalisan.KargoCalisaniID && randomCalisan.TamAd) {
+                                document.getElementById("updateKargoCalisani").value = randomCalisan.TamAd;
+                                document.getElementById("updateKargoCalisaniID").value = randomCalisan.KargoCalisaniID;
+                            }
+                            currentModal.show();
+                        })
+                        .catch(err => {
+                            console.error("Çalışan çekme hatası:", err);
+                            currentModal.show();
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+        });
+
+        // Ağırlık değişince -> Ücret (Güncelleme)
+        updateKargoAgirligiInput.addEventListener("input", function() {
+            const agirlik = parseFloat(updateKargoAgirligiInput.value || 0);
+            const turValue = updateKargoTuruInput.value;
+            updateOdemeTutariInput.value = hesaplaOdemeTutari(turValue, agirlik);
+        });
+
+        // İl/Ülke değişince -> İlçe/Şehir (Güncelleme modali)
+        updateKargoIlSelect.addEventListener("change", function() {
+            const turValue = updateKargoTuruInput.value;
+            updateKargoIlceSelect.innerHTML = '<option value="" selected disabled>Seçin</option>';
+
+            if(turValue === "YI") {
+                fetch("/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "getIlce",
+                        ilID: this.value
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        data.ilceler.forEach(item => {
+                            const opt = document.createElement("option");
+                            opt.value = item.IlceID;
+                            opt.textContent = item.IlceAdi;
+                            updateKargoIlceSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+            } else {
+                // YD
+                fetch("/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "getForeignCities",
+                        ulkeID: this.value
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        data.cities.forEach(city => {
+                            const opt = document.createElement("option");
+                            opt.value = city.yurtdisiSehirID;
+                            opt.textContent = city.yurtdisiSehirAdi;
+                            updateKargoIlceSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+        });
+
+        // Güncelle butonu
+        document.getElementById("saveUpdateBtn").addEventListener("click", function() {
+            const kargoTakipNo  = document.getElementById("updateKargoTakipNo").value;
+            const kargoTuru     = document.getElementById("updateKargoTuru").value;
+            const postaKodu     = document.getElementById("updatePostaKodu").value;
+            const gondericiAd   = document.getElementById("updateGondericiAd").value;
+            const gondericiSoyad= document.getElementById("updateGondericiSoyad").value;
+            const gondericiAdres= document.getElementById("updateGondericiAdres").value;
+            const gondericiTel  = document.getElementById("updateGondericiTel").value;
+
+            const aliciAd       = document.getElementById("updateAliciAd").value;
+            const aliciSoyad    = document.getElementById("updateAliciSoyad").value;
+            const aliciAdres    = document.getElementById("updateAliciAdres").value;
+            const aliciTel      = document.getElementById("updateAliciTel").value;
+
+            const kargoAgirligi = document.getElementById("updateKargoAgirligi").value;
+            const gonderimTarihi= document.getElementById("updateGonderimTarihi").value;
+            const teslimTarihi  = document.getElementById("updateTeslimTarihi").value;
+            const odemeTutari   = document.getElementById("updateOdemeTutari").value;
+
+            const ilID          = updateKargoIlSelect.value;
+            const ilceID        = updateKargoIlceSelect.value;
+            const calisanId     = document.getElementById("updateKargoCalisaniID").value;
+
+            // Kargo Durumu
+            const durumId       = updateDurumIDSelect.value;
+
+            fetch("/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "update",
+                    kargoTakipNo,
+                    kargoTuru,
+                    gondericiAd,
+                    gondericiSoyad,
+                    gondericiAdres,
+                    gondericiTel,
+                    aliciAd,
+                    aliciSoyad,
+                    aliciAdres,
+                    aliciTel,
+                    kargoAgirligi,
+                    gonderimTarihi,
+                    teslimTarihi,
+                    postaKodu,
+                    odemeTutari,
+                    calisanId,
+                    ilID,
+                    ilceID,
+                    durumId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    // GÜNCELLEME DE BAŞARILI OLUNCA AYNI POP-UP
+                    currentModal.hide();
+                    showKargoEklendiPopup(data.message || "Güncelleme Başarılı!");
+                } else {
+                    // ================== YENİ EKLENTİ (NEGATİF AĞIRLIK) ==================
+                    if (data.message && data.message.includes("Ctr_KargoAgirligi")) {
+                        showErrorPopup("Kargo Ağırlığı negatif olamaz!");
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+        });
+
+        /////////////////////////////////////////////////////////////////
+        // Rapor Oluşturma Pop-Up Gösterme ve İşlem
+        /////////////////////////////////////////////////////////////////
+        document.getElementById("createReportBtn").addEventListener("click", function() {
+            // Rapor oluşturma sürecini başlat
+            createReport();
+        });
+
+        function createReport() {
+            const createReportBtn = document.getElementById("createReportBtn");
+            createReportBtn.disabled = true; // Butonu devre dışı bırak
+            createReportBtn.innerHTML = 'Rapor Oluşturuluyor <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            // Rapor Oluşturma Pop-Up'ını Göster
+            showReportCreatingPopup();
+
+            fetch("/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "create_report" })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Rapor Oluşturma Pop-Up'ını Kapat
+                hideReportCreatingPopup();
+
+                if (data.success) {
+                    // Rapor Oluşturma Başarılı Pop-Up'ını Göster
+                    showReportCreatedPopup();
+
+                    // Butonu yeniden etkinleştir ve içeriğini geri al
+                    createReportBtn.disabled = false;
+                    createReportBtn.innerHTML = 'Rapor Oluştur';
+                } else {
+                    // Hata Pop-Up'ını Göster
+                    showErrorPopup(data.message || "Rapor oluşturulurken bir hata oluştu!");
+
+                    // Butonu yeniden etkinleştir ve içeriğini geri al
+                    createReportBtn.disabled = false;
+                    createReportBtn.innerHTML = 'Rapor Oluştur';
+                }
+            })
+            .catch(error => {
+                console.error("Rapor oluşturma hatası:", error);
+                hideReportCreatingPopup();
+
+                // Hata Pop-Up'ını Göster
+                showErrorPopup("Rapor oluşturulurken bir hata oluştu!");
+
+                // Butonu yeniden etkinleştir ve içeriğini geri al
+                createReportBtn.disabled = false;
+                createReportBtn.innerHTML = 'Rapor Oluştur';
+            });
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // Rapor Oluşturma Pop-Up Fonksiyonları
+        /////////////////////////////////////////////////////////////////
+        function showReportCreatingPopup() {
+            const overlay = document.getElementById("reportCreatingPopup");
+            overlay.style.display = "flex";
+        }
+
+        function hideReportCreatingPopup() {
+            const overlay = document.getElementById("reportCreatingPopup");
+            overlay.style.display = "none";
+        }
+
+        function showReportCreatedPopup() {
+            const overlay = document.getElementById("reportCreatedPopup");
+            overlay.style.display = "flex";
+
+            // 5 sn sonra kapanış animasyonu
+            setTimeout(() => {
+                const box = document.getElementById("reportCreatedBox");
+                box.classList.add("fade-out");
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    box.classList.remove("fade-out");
+                }, 500);
+            }, 5000);
+        }
+
+    </script>
+</body>
+</html>

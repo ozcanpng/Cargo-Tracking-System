@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kargo Sorgula</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #0078D7, #f4f4f9);
+      font-family: 'Poppins', sans-serif; /* Daha modern bir font */
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+
+    .container-theme {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 900px;
+      animation: fadeIn 1s ease-in-out;
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* YENİ EKLENEN ANİMASYON: slideDown */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-25px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    /* Bu sınıfı eklediğimizde .result-container her sorguda yeniden kayarak gelsin */
+    .slide-down {
+      animation: slideDown 0.8s ease forwards; /* 0.8 sn kayma süresi */
+    }
+
+    .title {
+      color: #0078D7;
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .btn-primary {
+      background-color: #0078D7;
+      border: none;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #005BBB;
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0, 120, 215, 0.3);
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 10px #0078D7;
+      border-color: #0078D7;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Geri Butonu */
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: white;
+      color: #0078D7;
+      border: 2px solid #0078D7;
+      padding: 10px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease,
+        box-shadow 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-decoration: none;
+    }
+
+    .back-button:hover {
+      background-color: #0078D7;
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 8px 15px rgba(0, 120, 215, 0.3);
+    }
+
+    /* İlerleme göstergesi */
+    .progress-steps {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      margin: 30px auto 20px auto;
+      animation: fadeIn 0.5s ease-in-out;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .progress-line {
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 6px;
+      background: #ddd;
+      z-index: 0;
+      transform: translateY(-50%);
+    }
+
+    .progress-fill {
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      height: 6px;
+      background: #0078D7;
+      z-index: 1;
+      transform: translateY(-50%);
+      transition: width 1s ease;
+      width: 0%;
+    }
+
+    .step {
+      position: relative;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .step-icon {
+      width: 80px;
+      height: 80px;
+      border: 5px solid #ddd;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #0078D7;
+      font-size: 2rem;
+      margin: 0 auto;
+      transition: background-color 0.5s ease, border-color 0.5s ease;
+    }
+
+    .step-icon.active {
+      background: #0078D7;
+      color: white;
+      border-color: #0078D7;
+    }
+
+    .step-label {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #0078D7;
+    }
+
+    /* Gönderici ve Alıcı tabloları */
+    .table-container {
+      margin-top: 30px;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .table-container h3 {
+      color: #0078D7;
+      font-size: 1.4rem;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table th,
+    table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      vertical-align: middle;
+    }
+
+    table th {
+      background-color: #f7f7f7;
+      font-weight: bold;
+      width: 30%;
+    }
+
+    /* Sonuç container */
+    .result-container {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /*
+    EKLENEN KISIM:
+    Kargo bulunamadığında görünecek pop-up penceresi
+    */
+    .popup-overlay {
+      display: none; /* Başlangıçta görünmez */
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.4); /* yarı saydam arka plan */
+      justify-content: center;
+      align-items: center;
+      z-index: 9999; /* Tüm öğelerin üstünde */
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .popup-box {
+      background: #fff;
+      padding: 40px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+      max-width: 300px;
+      position: relative;
+    }
+
+    .popup-icon {
+      display: inline-block;
+      border: 3px solid #ff2d2d;
+      border-radius: 50%;
+      color: #ff2d2d;
+      font-size: 2.5rem;
+      width: 60px;
+      height: 60px;
+      line-height: 56px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      animation: popupIconSpin 0.8s ease;
+    }
+
+    @keyframes popupIconSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .popup-message {
+      font-size: 1.2rem;
+      color: #333;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Geri Dön Butonu -->
+  <a href="index.html" class="back-button">&lt;</a>
+
+  <div class="container-theme">
+    <h1 class="title">Kargo Sorgula</h1>
+    <form id="kargoForm" class="mt-3">
+      <div class="mb-3">
+        <label for="kargoNo" class="form-label">Kargo Takip No</label>
+        <input
+          type="text"
+          class="form-control text-center"
+          id="kargoNo"
+          name="kargoNo"
+          required
+        />
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Sorgula</button>
+    </form>
+
+    <!-- Adım göstergesi (progress bar) -->
+    <div class="progress-steps mt-4" id="progressSteps">
+      <div class="progress-line"></div>
+      <!-- Burada .progress-fill genişliği durumID'ye göre ayarlanır -->
+      <div class="progress-fill" id="progressFill"></div>
+
+      <div class="step">
+        <div class="step-icon" id="step1">📦</div>
+        <div class="step-label">Hazırlanıyor</div>
+      </div>
+      <div class="step">
+        <div class="step-icon" id="step2">🚚</div>
+        <div class="step-label">Yolda</div>
+      </div>
+      <div class="step">
+        <div class="step-icon" id="step3">📬</div>
+        <div class="step-label">Teslim Edildi</div>
+      </div>
+    </div>
+
+    <!-- Sorgu sonuçlarının gösterildiği alan -->
+    <div class="result-container" id="resultContainer">
+      <div class="tracking-info mt-3 text-center" id="trackingInfo">
+        <p>Kargo Takip No: <strong id="trackingCode"></strong></p>
+        <p>Gönderim Tarihi: <strong id="sendDate"></strong></p>
+      </div>
+
+      <div class="table-container" id="infoTables">
+        <h3>Gönderici Bilgileri</h3>
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th>Ad</th>
+              <td id="gondericiAd"></td>
+            </tr>
+            <tr>
+              <th>Soyad</th>
+              <td id="gondericiSoyad"></td>
+            </tr>
+            <tr>
+              <th>Adres</th>
+              <td id="gondericiAdres"></td>
+            </tr>
+            <tr>
+              <th>Telefon</th>
+              <td id="gondericiTel"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Alıcı Bilgileri</h3>
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th>Ad</th>
+              <td id="aliciAd"></td>
+            </tr>
+            <tr>
+              <th>Soyad</th>
+              <td id="aliciSoyad"></td>
+            </tr>
+            <tr>
+              <th>Adres</th>
+              <td id="aliciAdres"></td>
+            </tr>
+            <tr>
+              <th>Telefon</th>
+              <td id="aliciTel"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kargo bulunamadığında ekrana gelecek özel pop-up -->
+  <div id="notFoundPopup" class="popup-overlay">
+    <div class="popup-box">
+      <div class="popup-icon">X</div>
+      <div class="popup-message">Kargo Bulunamadı</div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * İlerleme çubuğunu güncelleme fonksiyonu.
+     * fillWidth değerleri:
+     * 1. Durum → 0%,
+     * 2. Durum → 40%,
+     * 3. Durum → 80%.
+     */
+    function updateProgress(durumID) {
+      const progressSteps = document.getElementById("progressSteps");
+      const fill = document.getElementById("progressFill");
+      const stepIcons = [
+        document.getElementById("step1"),
+        document.getElementById("step2"),
+        document.getElementById("step3")
+      ];
+
+      // Adımları görünür yap
+      progressSteps.style.display = "flex";
+
+      // Tüm ikonlardan 'active' sınıfını kaldır
+      stepIcons.forEach(icon => icon.classList.remove("active"));
+
+      // Başlangıçta dolum 0 olarak ayarlanabilir
+      let fillWidth = 0;
+
+      // Durum 1: Hazırlanıyor
+      if (durumID === 1) {
+        stepIcons[0].classList.add("active");
+        fillWidth = 0;
+      }
+      // Durum 2: Yolda
+      else if (durumID === 2) {
+        stepIcons[0].classList.add("active");
+        stepIcons[1].classList.add("active");
+        fillWidth = 40;
+      }
+      // Durum 3: Teslim Edildi
+      else if (durumID === 3) {
+        stepIcons.forEach(icon => icon.classList.add("active"));
+        fillWidth = 80;
+      }
+
+      fill.style.width = fillWidth + "%";
+    }
+
+    // Pop-up'ı ekranda gösterip 5 sn sonra otomatik kapatma
+    function showNotFoundPopup() {
+      const popup = document.getElementById("notFoundPopup");
+      popup.style.display = "flex";
+
+      // 5 saniye sonra kaybolacak
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 5000);
+    }
+
+    document.getElementById("kargoForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const kargoNo = document.getElementById("kargoNo").value.trim();
+
+      fetch("/sorgula", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ kargoNo })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // DurumID'ye göre ilerleme çubuğunu güncelle
+            const durumID = data.data.DurumID || 1;
+            updateProgress(durumID);
+
+            // Her yeni sorguda .result-container'a "slide-down" animasyonunu yeniden uygula
+            const resultContainer = document.getElementById("resultContainer");
+            // İlk önce bir önceki animasyonu kaldır (varsa)
+            resultContainer.classList.remove("slide-down");
+            // "reflow" trick: animasyon sıfırlamak için
+            void resultContainer.offsetWidth;
+            // Sonra tekrar ekle
+            resultContainer.classList.add("slide-down");
+
+            // Sonuçları göster
+            resultContainer.style.display = "block";
+
+            // Takip numarası
+            document.getElementById("trackingCode").innerText =
+              data.data.KargoTakipNo || "";
+
+            // Tarihi al, Date nesnesiyle Türkçe locale çevir
+            let rawDate = data.data.GonderimTarihi || "";
+            let dateObj = new Date(rawDate);
+            if (!isNaN(dateObj.getTime())) {
+              let trOptions = {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              };
+              document.getElementById("sendDate").innerText =
+                dateObj.toLocaleDateString("tr-TR", trOptions);
+            } else {
+              document.getElementById("sendDate").innerText = rawDate;
+            }
+
+            // Gönderici bilgileri
+            document.getElementById("gondericiAd").innerText =
+              data.data.GondericiAd || "";
+            document.getElementById("gondericiSoyad").innerText =
+              data.data.GondericiSoyad || "";
+            document.getElementById("gondericiAdres").innerText =
+              data.data.GondericiAdres || "";
+            document.getElementById("gondericiTel").innerText =
+              data.data.GondericiTel || "";
+
+            // Alıcı bilgileri
+            document.getElementById("aliciAd").innerText =
+              data.data.AliciAd || "";
+            document.getElementById("aliciSoyad").innerText =
+              data.data.AliciSoyad || "";
+            document.getElementById("aliciAdres").innerText =
+              data.data.AliciAdres || "";
+            document.getElementById("aliciTel").innerText =
+              data.data.AliciTel || "";
+          } else {
+            // Kargo bulunamadığında özel pop-up tetikleniyor
+            showNotFoundPopup();
+          }
+        })
+        .catch(error => {
+          console.error("Hata:", error);
+          alert("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+        });
+    });
+  </script>
+</body>
+</html>
