@@ -21,7 +21,7 @@ A full-stack web application developed with **Flask** and **MySQL** to track and
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Cargo-Tracking-System.git
+git clone https://github.com/ozcanpng/Cargo-Tracking-System.git
 cd Cargo-Tracking-System
 ````
 3. Create a virtual environment and activate it:
