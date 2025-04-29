@@ -3,6 +3,10 @@ import mysql.connector
 import random
 import csv  # CSV yazma işlemi için ekleniyor
 import os    # Dosya yolunu doğrulamak için ekleniyor
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")  # Oturum için gizli anahtar
