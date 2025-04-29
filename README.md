@@ -51,7 +51,7 @@ mysql -u root -p < setup.sql
 ````
 6. Run the flask application:
 ````bash
-python app.py
+python Main.py
 ````
 
 7. Acces the application via:
